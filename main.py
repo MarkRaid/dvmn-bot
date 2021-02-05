@@ -7,6 +7,7 @@ import zoneinfo
 from time import sleep
 from datetime import datetime
 from urllib.parse import urlparse
+from urllib.parse import urlunparse
 
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -70,6 +71,8 @@ def start_long_polling_loop():
 		elif reviews["status"] == "found":
 			attempts  = reviews["new_attempts"]
 
+			send_fails_count = 0
+
 			while attempts:
 				attempt = attempts[-1]
 
@@ -85,6 +88,9 @@ def start_long_polling_loop():
 						disable_web_page_preview=True
 					)
 				except telegram.error.TelegramError:
+					if 10 <= send_fails_count: raise
+
+					send_fails_count += 1
 					sleep(60)
 					continue
 				
