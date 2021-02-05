@@ -65,7 +65,6 @@ def start_long_polling_loop():
 			)
 		except (
 			requests.exceptions.ConnectionError,
-			requests.exceptions.HTTPError,
 			requests.exceptions.ReadTimeout
 		):
 			sleep(60)
