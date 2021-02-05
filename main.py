@@ -101,8 +101,8 @@ def start_long_polling_loop():
 			timestamp = reviews["last_attempt_timestamp"]
 
 
-    # TODO: тут надо будет сохранить timestamp
-    sleep(2 * 60 * 60)
+	# TODO: тут надо будет сохранить timestamp
+	sleep(2 * 60 * 60)
 
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
