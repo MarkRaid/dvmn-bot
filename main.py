@@ -25,6 +25,7 @@ AUTHORIZATION_HEADERS = {
 
 ## Messages ##
 START_MESSAGE = "#### DVMN-бот запущен ####"
+END_MESSAGE   = "#### DVMN-бот остановлен ####"
 
 def get_telegram_report_message(work_title, lesson_url, is_negative):
 	url_parts    = list(urlparse(LONG_POLLING_URL))
@@ -105,3 +106,5 @@ logging.basicConfig(level=logging.INFO)
 logging.info(START_MESSAGE)
 
 start_long_polling_loop()
+
+logging.info(END_MESSAGE)
