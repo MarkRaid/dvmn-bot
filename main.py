@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-DVMN_API_TOKEN = os.getenv("VMN_API_TOKEN")
+DVMN_API_TOKEN = os.getenv("DVMN_API_TOKEN")
 CHAT_ID        = os.getenv("CHAT_ID")
 
 USER_TIME_ZONE = os.getenv("USER_TIME_ZONE")
