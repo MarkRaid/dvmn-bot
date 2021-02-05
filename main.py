@@ -26,18 +26,13 @@ AUTHORIZATION_HEADERS = {
 START_MESSAGE = "#### DVMN-бот запущен ####"
 
 def get_telegram_report_message(work_title, lesson_url, is_negative):
-	api_url_pr  = urlparse(LONG_POLLING_URL)
-	lesson_path = urlparse(lesson_url).path
+	url_parts    = list(urlparse(LONG_POLLING_URL))
+	url_parts[2] = urlparse(lesson_url).path
 	
-	url_pr = urlparse("")
-	url_pr.scheme = api_url_pr.scheme
-	url_pr.netloc = api_url_pr.netloc
-	url_pr.path   = lesson_path
+	url = urlunparse(url_parts)
 
-	url = url_pr.geturl()
-
-	complite = f'✅["{work_title}"]({url}) - сдана✅'
-	mistakes = f'🚫["{work_title}"]({url}) - с ошибкой🚫'
+	complite = f'✅[{work_title}]({url}) - сдана✅'
+	mistakes = f'🚫[{work_title}]({url}) - с ошибкой🚫'
 
 	return (mistakes if is_negative else complite)
 ## Messages end ##
@@ -90,7 +85,6 @@ def start_long_polling_loop():
 						disable_web_page_preview=True
 					)
 				except telegram.error.TelegramError:
-					raise
 					sleep(60)
 					continue
 				
