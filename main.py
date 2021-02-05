@@ -52,6 +52,7 @@ def now_notification_time():
 
 
 def start_long_polling_loop():
+	# TODO: тут надо будет восстановить timestamp
 	timestamp = ""
 
 	while now_notification_time():
@@ -98,6 +99,10 @@ def start_long_polling_loop():
 				attempts.pop(-1)
 
 			timestamp = reviews["last_attempt_timestamp"]
+
+
+    # TODO: тут надо будет сохранить timestamp
+    sleep(2 * 60 * 60)
 
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
