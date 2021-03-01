@@ -2,30 +2,15 @@ import requests
 import telegram
 import os
 import logging
-import zoneinfo
 
 from time import sleep
-from datetime import datetime
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
-
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-DVMN_API_TOKEN = os.getenv("DVMN_API_TOKEN")
-CHAT_ID        = os.getenv("CHAT_ID")
-
-USER_TIME_ZONE = os.getenv("USER_TIME_ZONE")
-START_HOUR     = int(os.getenv("START_HOUR"))
-
 LONG_POLLING_URL = "https://dvmn.org/api/long_polling/"
-AUTHORIZATION_HEADERS = {
-	"Authorization": f"Token {DVMN_API_TOKEN}"
-}
-
 
 ## Messages ##
-START_MESSAGE = "#### DVMN-бот запущен ####"
-END_MESSAGE   = "#### DVMN-бот остановлен ####"
+START_MESSAGE = "#### DVMN-бот начал работать ####"
 
 def get_telegram_report_message(work_title, lesson_url, is_negative):
 	url_parts    = list(urlparse(LONG_POLLING_URL))
@@ -46,70 +31,87 @@ def get_new_reviews(headers={}, params={}):
 	return response.json()
 
 
-def now_notification_time():
-	now = datetime.now(zoneinfo.ZoneInfo(USER_TIME_ZONE))
-	return (START_HOUR <= now.hour)
-
-
-def start_long_polling_loop():
-	# TODO: тут надо будет восстановить timestamp
+def start_long_polling_loop(bot, DVMN_API_TOKEN, TELEGRAM_CHAT_ID):
+	AUTHORIZATION_HEADERS = {
+		"Authorization": f"Token {DVMN_API_TOKEN}"
+	}
 	timestamp = ""
 
-	while now_notification_time():
+	while True:
 		try:
-			reviews = get_new_reviews(
-				headers=AUTHORIZATION_HEADERS,
-				params={"timestamp": timestamp},
-			)
-		except (
-			requests.exceptions.ConnectionError,
-			requests.exceptions.ReadTimeout
-		):
-			sleep(60)
-			continue
+			try:
+				reviews = get_new_reviews(
+					headers=AUTHORIZATION_HEADERS,
+					params={"timestamp": timestamp},
+				)
+			except (
+				requests.exceptions.ConnectionError,
+				requests.exceptions.ReadTimeout
+			):
+				sleep(60)
+				continue
 
-		if reviews["status"]   == "timeout":
-			timestamp = reviews["timestamp_to_request"]
-		elif reviews["status"] == "found":
-			attempts  = reviews["new_attempts"]
+			resp_status = reviews["status"]
 
-			send_fails_count = 0
+			if resp_status   == "timeout":
+				timestamp = reviews["timestamp_to_request"]
+			elif resp_status == "found":
+				attempts  = reviews["new_attempts"]
 
-			while attempts:
-				attempt = attempts[-1]
+				send_fails_count = 0
 
-				try:
-					bot.send_message(
-						chat_id=CHAT_ID,
-						text=get_telegram_report_message(
-							attempt["lesson_title"],
-							attempt["lesson_url"],
-							attempt["is_negative"]
-						),
-						parse_mode=telegram.ParseMode.MARKDOWN,
-						disable_web_page_preview=True
-					)
-				except telegram.error.TelegramError:
-					if 10 <= send_fails_count: raise
+				while attempts:
+					attempt = attempts[-1]
 
-					send_fails_count += 1
-					sleep(60)
-					continue
-				
-				attempts.pop(-1)
+					try:
+						bot.send_message(
+							chat_id=TELEGRAM_CHAT_ID,
+							text=get_telegram_report_message(
+								attempt["lesson_title"],
+								attempt["lesson_url"],
+								attempt["is_negative"]
+							),
+							parse_mode=telegram.ParseMode.MARKDOWN,
+							disable_web_page_preview=True
+						)
+					except telegram.error.TelegramError:
+						if 10 <= send_fails_count: raise
 
-			timestamp = reviews["last_attempt_timestamp"]
+						send_fails_count += 1
+						sleep(60)
+						continue
+					else:
+						attempts.pop(-1)
+
+				timestamp = reviews["last_attempt_timestamp"]
+			else:
+				raise Exception(f"Неизвестный статус ответа сервера: {resp_status}")
+		except:
+	   		logging.exception("Бот упал с ошибкой:")
 
 
-	# TODO: тут надо будет сохранить timestamp
-	sleep(2 * 60 * 60)
+if __name__ == "__main__":
+	TELEGRAM_BOT_TOKEN	= os.environ["TELEGRAM_BOT_TOKEN"]
+	TELEGRAM_CHAT_ID 	= os.environ["TELEGRAM_CHAT_ID"]
+	TELEGRAM_CHANNEL_ID = os.environ["TELEGRAM_CHANNEL_ID"]
+	DVMN_API_TOKEN 		= os.environ["DVMN_API_TOKEN"]
 
+	bot = telegram.Bot(token=TELEGRAM_BOT_TOKEN)
 
-bot = telegram.Bot(token=TELEGRAM_TOKEN)
+	class TelegramHandler(logging.Handler):
+		def emit(self, record):
+			log_entry = self.format(record)
+			bot.send_message(TELEGRAM_CHAT_ID, log_entry)
 
-logging.basicConfig(level=logging.INFO)
-logging.info(START_MESSAGE)
+	logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
+	logger = logging.getLogger()
+	logger.setLevel(logging.INFO)
+	logger.addHandler(TelegramHandler())
 
-start_long_polling_loop()
+	logger.info(START_MESSAGE)
 
-logging.info(END_MESSAGE)
+	start_long_polling_loop(
+		bot,
+		DVMN_API_TOKEN,
+		TELEGRAM_CHANNEL_ID
+	)

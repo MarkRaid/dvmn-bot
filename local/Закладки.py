@@ -1,0 +1,11 @@
+https://pythonworld.ru/osnovy/pep-8-rukovodstvo-po-napisaniyu-koda-na-python.html
+https://devman.org/encyclopedia/clean_code/good_names/
+https://devman.org/encyclopedia/clean_code/decomposition_pure_functions/
+https://devman.org/encyclopedia/clean_code/tips_and_tricks_srp/
+https://devman.org/encyclopedia/clean_code/decomposition_separate_input_output/
+https://devman.org/encyclopedia/logs/logs-formatting/
+https://devman.org/encyclopedia/logs/logging-handlers/
+https://devman.org/encyclopedia/async_python/coroutine_bomb/
+https://choosealicense.com/
+https://dvmn.org/modules/chat-bots/#5
+https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/licensing-a-repository
