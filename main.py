@@ -87,10 +87,10 @@ def start_long_polling_loop(bot, dvmn_api_token, telegram_chat_id):
 
 
 if __name__ == "__main__":
-	telegram_bot_token	= os.environ["TELEGRAM_BOT_TOKEN"]
-	telegram_chat_id 	= os.environ["TELEGRAM_CHAT_ID"]
+	telegram_bot_token  = os.environ["TELEGRAM_BOT_TOKEN"]
+	telegram_chat_id    = os.environ["TELEGRAM_CHAT_ID"]
 	telegram_channel_id = os.environ["TELEGRAM_CHANNEL_ID"]
-	dvmn_api_token 		= os.environ["DVMN_API_TOKEN"]
+	dvmn_api_token      = os.environ["DVMN_API_TOKEN"]
 
 	bot = telegram.Bot(token=telegram_bot_token)
 
