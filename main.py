@@ -47,14 +47,10 @@ def retry_if_telegram_error(exception):
     wait_fixed=1000,
     retry_on_exception=retry_if_telegram_error
 )
-def send_report_message(bot, telegram_chat_id, attempt):
+def send_message(message, bot, telegram_chat_id):
     bot.send_message(
         chat_id=telegram_chat_id,
-        text=get_telegram_report_message(
-            attempt["lesson_title"],
-            attempt["lesson_url"],
-            attempt["is_negative"]
-        ),
+        text=message,
         parse_mode=telegram.ParseMode.MARKDOWN,
         disable_web_page_preview=True
     )
@@ -85,7 +81,13 @@ def start_long_polling_loop(bot, dvmn_api_token, telegram_chat_id):
                 timestamp = reviews["timestamp_to_request"]
             elif resp_status == "found":
                 for attempt in reversed(reviews["new_attempts"]):
-                    send_report_message(bot, telegram_chat_id, attempt)
+                    message = get_telegram_report_message(
+                        attempt["lesson_title"],
+                        attempt["lesson_url"],
+                        attempt["is_negative"]
+                    )
+
+                    send_message(message, bot, telegram_chat_id)
 
                 timestamp = reviews["last_attempt_timestamp"]
         except:
