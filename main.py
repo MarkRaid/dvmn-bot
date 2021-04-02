@@ -2,8 +2,8 @@ import os
 import logging
 import time
 
-import requests
 import telegram
+import requests
 
 from retrying import retry
 
