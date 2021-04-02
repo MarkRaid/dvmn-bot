@@ -11,24 +11,27 @@ from bot_logger import TelegramHandler
 
 
 DVMN_URL = "https://dvmn.org"
-LONG_POLLING_URL = DVMN_URL + "/api/long_polling/"
+LONG_POLLING_URL = f'{DVMN_URL}/api/long_polling/'
 
 logger = logging.getLogger()
 
 
 # Messages
-def get_start_message():
-    return "# DVMN-бот начал работать #"
+start_message = "# DVMN-бот начал работать #"
 
 
-def get_telegram_report_message(work_title, lesson_url, is_negative):
-    url = DVMN_URL + lesson_url
+def telegram_report_message(work_title, lesson_url, is_negative):
+    url = f'{DVMN_URL}{lesson_url}'
     mdLink = f'[{work_title}]({url})'
 
     complite = f'✅{mdLink} - сдана✅'
     mistakes = f'🚫{mdLink} - с ошибкой🚫'
 
-    return (mistakes if is_negative else complite)
+    return (
+        mistakes
+        if is_negative
+        else complite
+    )
 # Messages end
 
 
@@ -77,19 +80,20 @@ def start_long_polling_loop(bot, dvmn_api_token, telegram_chat_id):
 
             resp_status = reviews["status"]
 
-            if resp_status == "timeout":
+            if resp_status != "found":
                 timestamp = reviews["timestamp_to_request"]
-            elif resp_status == "found":
-                for attempt in reversed(reviews["new_attempts"]):
-                    message = get_telegram_report_message(
-                        attempt["lesson_title"],
-                        attempt["lesson_url"],
-                        attempt["is_negative"]
-                    )
+                continue
 
-                    send_message(message, bot, telegram_chat_id)
+            for attempt in reversed(reviews["new_attempts"]):
+                message = telegram_report_message(
+                    attempt["lesson_title"],
+                    attempt["lesson_url"],
+                    attempt["is_negative"]
+                )
 
-                timestamp = reviews["last_attempt_timestamp"]
+                send_message(message, bot, telegram_chat_id)
+
+            timestamp = reviews["last_attempt_timestamp"]
         except:
             logging.exception("Бот упал с ошибкой:")
 
@@ -106,7 +110,7 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)
     logger.addHandler(TelegramHandler(bot, telegram_chat_id))
 
-    logger.info(get_start_message())
+    logger.info(start_message)
 
     start_long_polling_loop(
         bot,
