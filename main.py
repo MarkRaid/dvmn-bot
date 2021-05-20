@@ -6,6 +6,7 @@ import telegram
 import requests
 
 from retrying import retry
+from dotenv import load_dotenv
 
 from bot_logger import TelegramHandler
 
@@ -99,6 +100,7 @@ def start_long_polling_loop(bot, dvmn_api_token, telegram_chat_id):
 
 
 if __name__ == "__main__":
+    load_dotenv()
     telegram_channel_id = os.environ["TELEGRAM_CHANNEL_ID"]
     telegram_bot_token = os.environ["TELEGRAM_BOT_TOKEN"]
     telegram_chat_id = os.environ["TELEGRAM_CHAT_ID"]
